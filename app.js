@@ -368,6 +368,20 @@ function setupEventListeners() {
     });
   }
 
+  // Explicit Course Card click redirection
+  const cards = document.querySelectorAll('.course-card');
+  cards.forEach(card => {
+    card.addEventListener('click', (e) => {
+      const url = card.getAttribute('href');
+      if (url && url.startsWith('http')) {
+        // Allow native link navigation while ensuring window.open fallback
+        if (e.target.tagName !== 'A') {
+          window.open(url, '_blank', 'noopener,noreferrer');
+        }
+      }
+    });
+  });
+
   const adminAuthModal = document.getElementById('adminAuthModal');
   if (adminAuthModal) {
     adminAuthModal.addEventListener('click', (e) => {

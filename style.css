@@ -1003,6 +1003,11 @@ a {
   font-size: 11.5px;
   font-weight: var(--weight-semibold);
   transition: all var(--transition-fast);
+  pointer-events: none;
+}
+
+.course-card * {
+  pointer-events: none;
 }
 
 .start-learning-btn svg {
