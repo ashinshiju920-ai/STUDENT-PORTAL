@@ -395,26 +395,12 @@ function navigateToCourse(event, courseKey) {
   const card = document.getElementById('card-' + courseKey);
   if (card) {
     card.href = targetUrl;
+    card.setAttribute('href', targetUrl);
   }
 
-  const isMobile = /iPhone|iPad|iPod|Android|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent || '');
-
-  if (isMobile) {
-    // On mobile devices, direct window.location navigation triggers Telegram app seamlessly
-    if (event) {
-      event.preventDefault();
-      event.stopPropagation();
-    }
-    window.location.href = targetUrl;
-  } else {
-    // On desktop, open in new tab
-    if (event) {
-      event.preventDefault();
-    }
-    const win = window.open(targetUrl, '_blank', 'noopener,noreferrer');
-    if (!win || win.closed || typeof win.closed === 'undefined') {
-      window.location.href = targetUrl;
-    }
+  // If called programmatically (not a natural anchor click)
+  if (!event || !event.target || !event.target.closest('a')) {
+    window.open(targetUrl, '_blank', 'noopener,noreferrer');
   }
 }
 window.navigateToCourse = navigateToCourse;
