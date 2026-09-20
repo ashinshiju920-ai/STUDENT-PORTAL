@@ -281,15 +281,6 @@ function toggleWhatsAppPopup() {
   }
 }
 
-function initWhatsAppAutoPopup() {
-  setTimeout(() => {
-    const popup = document.getElementById('whatsappChatPopup');
-    if (popup && !popup.classList.contains('open')) {
-      popup.classList.add('open');
-    }
-  }, 3500);
-}
-
 function loadAndApplySavedLinks() {
   const links = getActiveLinks();
   applyActiveLinks(links);
@@ -327,7 +318,6 @@ document.addEventListener('DOMContentLoaded', () => {
   loadAndApplySavedLinks();
   renderNotifications();
   setupEventListeners();
-  initWhatsAppAutoPopup();
 });
 
 // Set up UI event listeners
