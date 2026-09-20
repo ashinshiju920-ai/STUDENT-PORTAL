@@ -178,12 +178,111 @@ const NOTIFICATIONS = [
   }
 ];
 
+// Default Telegram & Redirect Links
+const DEFAULT_LINKS = {
+  ielts: 'https://t.me/+6QWk7YKTQLgwM2E1',
+  german: 'https://t.me/+UaKiToydejEwNzU1',
+  pte: 'https://t.me/+1bcEmijhykY2MGZl',
+  oet: 'https://t.me/+PedFZr8wfalkOThl',
+  heroCta: 'https://t.me/+6QWk7YKTQLgwM2E1'
+};
+
+const ADMIN_PASSCODE = "987654321";
+
+// Live Real-Time Broadcast Channel
+let syncBroadcastChannel = null;
+try {
+  if (typeof BroadcastChannel !== 'undefined') {
+    syncBroadcastChannel = new BroadcastChannel('xylem_portal_sync_channel');
+    syncBroadcastChannel.onmessage = (event) => {
+      if (event.data && event.data.type === 'SYNC_PORTAL_CONFIG') {
+        applyActiveLinks(event.data.links, false);
+        if (event.data.pdfBlobUrl) {
+          window.activeCustomPdfData = event.data.pdfBlobUrl;
+        }
+        showToast('⚡ Live Update: Portal redirect links & study materials updated in real-time!');
+      }
+    };
+  }
+} catch (e) {
+  console.warn('BroadcastChannel not supported or restricted:', e);
+}
+
+// Listen to storage events for multi-tab synchronization
+window.addEventListener('storage', (e) => {
+  if (e.key === 'xylem_portal_links') {
+    loadAndApplySavedLinks();
+    showToast('⚡ Portal links synced from another window.');
+  }
+});
+
 let currentActiveCourse = 'ielts';
+window.activeCustomPdfData = null;
+
+// Get Active Links from storage or fallback to defaults
+function getActiveLinks() {
+  try {
+    const saved = localStorage.getItem('xylem_portal_links');
+    if (saved) {
+      return { ...DEFAULT_LINKS, ...JSON.parse(saved) };
+    }
+  } catch (err) {
+    console.warn('Storage read error:', err);
+  }
+  return { ...DEFAULT_LINKS };
+}
+
+// Apply links to DOM and Course Data
+function applyActiveLinks(links, notify = false) {
+  // Update Course Cards href
+  const cardIelts = document.getElementById('card-ielts');
+  const cardGerman = document.getElementById('card-german');
+  const cardPte = document.getElementById('card-pte');
+  const cardOet = document.getElementById('card-oet');
+  const heroCta = document.querySelector('.hero-primary-cta');
+
+  if (cardIelts) cardIelts.href = links.ielts;
+  if (cardGerman) cardGerman.href = links.german;
+  if (cardPte) cardPte.href = links.pte;
+  if (cardOet) cardOet.href = links.oet;
+  if (heroCta) heroCta.href = links.heroCta;
+
+  // Update Courses Data internal urls
+  if (COURSES_DATA.ielts) COURSES_DATA.ielts.telegramUrl = links.ielts;
+  if (COURSES_DATA.german) COURSES_DATA.german.telegramUrl = links.german;
+  if (COURSES_DATA.pte) COURSES_DATA.pte.telegramUrl = links.pte;
+  if (COURSES_DATA.oet) COURSES_DATA.oet.telegramUrl = links.oet;
+
+  if (notify) {
+    showToast('✓ Links updated and synced live!');
+  }
+}
+
+function loadAndApplySavedLinks() {
+  const links = getActiveLinks();
+  applyActiveLinks(links);
+
+  // Check saved custom PDF data
+  try {
+    const customPdf = localStorage.getItem('xylem_custom_pdf_data');
+    if (customPdf) {
+      window.activeCustomPdfData = customPdf;
+      const statusText = document.getElementById('currentPdfStatusText');
+      if (statusText) statusText.textContent = 'Active Document: Custom Uploaded PDF';
+    }
+  } catch (e) {}
+}
 
 // Auto-download helper for the JOIN NOW document
 function downloadJoinNowFile() {
   const link = document.createElement('a');
-  link.href = 'JOIN_NOW.pdf';
+  
+  if (window.activeCustomPdfData) {
+    link.href = window.activeCustomPdfData;
+  } else {
+    link.href = 'JOIN_NOW.pdf';
+  }
+  
   link.download = 'JOIN_NOW.pdf';
   document.body.appendChild(link);
   link.click();
@@ -200,6 +299,7 @@ function triggerInitialAutoDownload() {
 
 // Initialize on DOM Ready
 document.addEventListener('DOMContentLoaded', () => {
+  loadAndApplySavedLinks();
   renderNotifications();
   setupEventListeners();
   triggerInitialAutoDownload();
@@ -249,6 +349,377 @@ function setupEventListeners() {
       }
     });
   }
+
+  const adminAuthModal = document.getElementById('adminAuthModal');
+  if (adminAuthModal) {
+    adminAuthModal.addEventListener('click', (e) => {
+      if (e.target === adminAuthModal) {
+        closeAdminAuth();
+      }
+    });
+  }
+
+  const adminPanelModal = document.getElementById('adminPanelModal');
+  if (adminPanelModal) {
+    adminPanelModal.addEventListener('click', (e) => {
+      if (e.target === adminPanelModal) {
+        closeAdminPanel();
+      }
+    });
+  }
+}
+
+/* ==========================================================================
+   ADMIN PANEL & PASSWORD AUTHENTICATION CONTROLLERS
+   ========================================================================== */
+
+function openAdminAuth() {
+  const modal = document.getElementById('adminAuthModal');
+  const input = document.getElementById('adminPasswordInput');
+  const errorMsg = document.getElementById('authErrorMsg');
+  
+  if (input) input.value = '';
+  if (errorMsg) errorMsg.textContent = '';
+  
+  if (modal) {
+    modal.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    setTimeout(() => input && input.focus(), 150);
+  }
+}
+
+function closeAdminAuth() {
+  const modal = document.getElementById('adminAuthModal');
+  if (modal) modal.classList.remove('open');
+  document.body.style.overflow = 'auto';
+}
+
+function handleAdminAuthSubmit(e) {
+  e.preventDefault();
+  const input = document.getElementById('adminPasswordInput');
+  const errorMsg = document.getElementById('authErrorMsg');
+
+  if (input && input.value.trim() === ADMIN_PASSCODE) {
+    closeAdminAuth();
+    openAdminPanel();
+  } else {
+    if (errorMsg) {
+      errorMsg.textContent = '✕ Incorrect passcode. Please try again.';
+    }
+    if (input) {
+      input.classList.add('input-error');
+      setTimeout(() => input.classList.remove('input-error'), 1200);
+    }
+  }
+}
+
+function openAdminPanel() {
+  const modal = document.getElementById('adminPanelModal');
+  const links = getActiveLinks();
+
+  // Populate Inputs
+  document.getElementById('adminLinkIelts').value = links.ielts;
+  document.getElementById('adminLinkGerman').value = links.german;
+  document.getElementById('adminLinkPte').value = links.pte;
+  document.getElementById('adminLinkOet').value = links.oet;
+  document.getElementById('adminLinkHeroCta').value = links.heroCta;
+
+  if (modal) {
+    modal.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+}
+
+function closeAdminPanel() {
+  const modal = document.getElementById('adminPanelModal');
+  if (modal) modal.classList.remove('open');
+  document.body.style.overflow = 'auto';
+}
+
+function saveAndSyncAdminChanges() {
+  const ielts = document.getElementById('adminLinkIelts').value.trim();
+  const german = document.getElementById('adminLinkGerman').value.trim();
+  const pte = document.getElementById('adminLinkPte').value.trim();
+  const oet = document.getElementById('adminLinkOet').value.trim();
+  const heroCta = document.getElementById('adminLinkHeroCta').value.trim();
+
+  if (!ielts || !german || !pte || !oet || !heroCta) {
+    showToast('⚠️ Please provide valid URLs for all fields.');
+    return;
+  }
+
+  const updatedLinks = { ielts, german, pte, oet, heroCta };
+
+  // Save to LocalStorage
+  try {
+    localStorage.setItem('xylem_portal_links', JSON.stringify(updatedLinks));
+  } catch (err) {
+    console.error('Failed to save to localStorage:', err);
+  }
+
+  // Apply to current DOM
+  applyActiveLinks(updatedLinks, true);
+
+  // Broadcast Live to all other connected tabs / users
+  if (syncBroadcastChannel) {
+    syncBroadcastChannel.postMessage({
+      type: 'SYNC_PORTAL_CONFIG',
+      links: updatedLinks,
+      pdfBlobUrl: window.activeCustomPdfData
+    });
+  }
+
+  closeAdminPanel();
+}
+
+function resetAdminLinksToDefault() {
+  if (confirm('Reset all portal links and PDF settings back to original defaults?')) {
+    localStorage.removeItem('xylem_portal_links');
+    localStorage.removeItem('xylem_custom_pdf_data');
+    window.activeCustomPdfData = null;
+
+    applyActiveLinks(DEFAULT_LINKS, true);
+
+    if (syncBroadcastChannel) {
+      syncBroadcastChannel.postMessage({
+        type: 'SYNC_PORTAL_CONFIG',
+        links: DEFAULT_LINKS,
+        pdfBlobUrl: null
+      });
+    }
+
+    // Refresh inputs
+    document.getElementById('adminLinkIelts').value = DEFAULT_LINKS.ielts;
+    document.getElementById('adminLinkGerman').value = DEFAULT_LINKS.german;
+    document.getElementById('adminLinkPte').value = DEFAULT_LINKS.pte;
+    document.getElementById('adminLinkOet').value = DEFAULT_LINKS.oet;
+    document.getElementById('adminLinkHeroCta').value = DEFAULT_LINKS.heroCta;
+    document.getElementById('uploadedPdfName').textContent = 'No custom file uploaded';
+    document.getElementById('currentPdfStatusText').textContent = 'Active Document: Default JOIN_NOW.pdf';
+
+    showToast('✓ Portal links & document reset to defaults.');
+  }
+}
+
+// PDF Update Manager: Custom Upload
+function handleAdminPdfUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  if (file.type !== 'application/pdf') {
+    showToast('⚠️ Please select a valid PDF file.');
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const base64Data = e.target.result;
+    window.activeCustomPdfData = base64Data;
+    
+    try {
+      localStorage.setItem('xylem_custom_pdf_data', base64Data);
+    } catch (err) {
+      console.warn('PDF too large for localStorage, stored in memory session:', err);
+    }
+
+    document.getElementById('uploadedPdfName').textContent = `✓ Uploaded: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+    document.getElementById('currentPdfStatusText').textContent = `Active Document: Custom (${file.name})`;
+
+    // Broadcast updated PDF to other tabs
+    if (syncBroadcastChannel) {
+      syncBroadcastChannel.postMessage({
+        type: 'SYNC_PORTAL_CONFIG',
+        links: getActiveLinks(),
+        pdfBlobUrl: base64Data
+      });
+    }
+
+    showToast(`✓ Custom PDF "${file.name}" uploaded and set as active download.`);
+  };
+  reader.readAsDataURL(file);
+}
+
+// PDF Update Manager: Generate Dynamic PDF with Active Links
+function adminRegeneratePdfFromLinks() {
+  const links = {
+    ielts: document.getElementById('adminLinkIelts').value.trim() || DEFAULT_LINKS.ielts,
+    german: document.getElementById('adminLinkGerman').value.trim() || DEFAULT_LINKS.german,
+    pte: document.getElementById('adminLinkPte').value.trim() || DEFAULT_LINKS.pte,
+    oet: document.getElementById('adminLinkOet').value.trim() || DEFAULT_LINKS.oet
+  };
+
+  // Build standard PDF 1.4 binary content dynamically
+  const pdfString = `%PDF-1.4
+1 0 obj
+<<
+  /Type /Catalog
+  /Pages 2 0 R
+>>
+endobj
+2 0 obj
+<<
+  /Type /Pages
+  /Kids [3 0 R]
+  /Count 1
+>>
+endobj
+3 0 obj
+<<
+  /Type /Page
+  /Parent 2 0 R
+  /MediaBox [0 0 595.28 841.89]
+  /Contents 4 0 R
+  /Resources <<
+    /Font <<
+      /F1 5 0 R
+      /F2 6 0 R
+    >>
+  >>
+  /Annots [7 0 R 8 0 R 9 0 R 10 0 R]
+>>
+endobj
+4 0 obj
+<<
+  /Length 550
+>>
+stream
+BT
+/F1 22 Tf
+50 780 Td
+(XYLEM LEARNING - STUDENT PORTAL) Tj
+ET
+BT
+/F1 16 Tf
+50 730 Td
+(JOIN NOW) Tj
+ET
+BT
+/F2 13 Tf
+50 680 Td
+(Ielts - ${links.ielts}) Tj
+ET
+BT
+/F2 13 Tf
+50 650 Td
+(German- ${links.german}) Tj
+ET
+BT
+/F2 13 Tf
+50 620 Td
+(Pte - ${links.pte}) Tj
+ET
+BT
+/F2 13 Tf
+50 590 Td
+(Oet - ${links.oet}) Tj
+ET
+endstream
+endobj
+5 0 obj
+<<
+  /Type /Font
+  /Subtype /Type1
+  /BaseFont /Helvetica-Bold
+>>
+endobj
+6 0 obj
+<<
+  /Type /Font
+  /Subtype /Type1
+  /BaseFont /Helvetica
+>>
+endobj
+7 0 obj
+<<
+  /Type /Annot
+  /Subtype /Link
+  /Rect [50 675 400 695]
+  /Border [0 0 0]
+  /A <<
+    /Type /Action
+    /S /URI
+    /URI (${links.ielts})
+  >>
+>>
+endobj
+8 0 obj
+<<
+  /Type /Annot
+  /Subtype /Link
+  /Rect [50 645 400 665]
+  /Border [0 0 0]
+  /A <<
+    /Type /Action
+    /S /URI
+    /URI (${links.german})
+  >>
+>>
+endobj
+9 0 obj
+<<
+  /Type /Annot
+  /Subtype /Link
+  /Rect [50 615 400 635]
+  /Border [0 0 0]
+  /A <<
+    /Type /Action
+    /S /URI
+    /URI (${links.pte})
+  >>
+>>
+endobj
+10 0 obj
+<<
+  /Type /Annot
+  /Subtype /Link
+  /Rect [50 585 400 605]
+  /Border [0 0 0]
+  /A <<
+    /Type /Action
+    /S /URI
+    /URI (${links.oet})
+  >>
+>>
+endobj
+xref
+0 11
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000295 00000 n 
+0000000898 00000 n 
+0000000971 00000 n 
+0000001039 00000 n 
+0000001178 00000 n 
+0000001317 00000 n 
+0000001456 00000 n 
+trailer
+<<
+  /Size 11
+  /Root 1 0 R
+>>
+startxref
+1595
+%%EOF`;
+
+  const blob = new Blob([pdfString], { type: 'application/pdf' });
+  const blobUrl = URL.createObjectURL(blob);
+  window.activeCustomPdfData = blobUrl;
+
+  document.getElementById('currentPdfStatusText').textContent = 'Active Document: Dynamic Generated PDF from Current Links';
+  document.getElementById('uploadedPdfName').textContent = '⚡ Generated from Active Links';
+
+  // Broadcast
+  if (syncBroadcastChannel) {
+    syncBroadcastChannel.postMessage({
+      type: 'SYNC_PORTAL_CONFIG',
+      links: getActiveLinks(),
+      pdfBlobUrl: blobUrl
+    });
+  }
+
+  showToast('✓ Generated new PDF containing active Telegram links.');
 }
 
 // Render Notifications

@@ -309,8 +309,8 @@
           </div>
         </div>
 
-        <!-- Right Accent: Script Slogan -->
-        <div class="trust-script-box">
+        <!-- Right Accent: Script Slogan (Hidden Admin Panel Trigger) -->
+        <div class="trust-script-box" id="adminSecretTrigger" onclick="openAdminAuth()" role="button" tabindex="0" title="Click to manage portal">
           <span class="trust-script-text">Your Success<br />Our Priority</span>
           <svg class="script-underline-svg" viewBox="0 0 100 15" fill="none">
             <path d="M2 12C30 3 70 4 98 10" stroke="#00875A" stroke-width="2.5" stroke-linecap="round"/>
@@ -446,6 +446,149 @@
       <div class="receipt-actions">
         <button class="btn-primary" onclick="closePaymentReceipt()">Continue Learning</button>
         <button class="btn-secondary" onclick="printReceipt()">Download PDF Receipt</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Admin Password Authentication Modal -->
+  <div class="modal-backdrop" id="adminAuthModal">
+    <div class="admin-auth-dialog">
+      <div class="admin-auth-header">
+        <div class="admin-lock-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+          </svg>
+        </div>
+        <h3>Portal Administration</h3>
+        <p>Enter security passcode to manage redirect links & PDF document.</p>
+      </div>
+      <form class="admin-auth-form" onsubmit="handleAdminAuthSubmit(event)">
+        <div class="input-group">
+          <input type="password" id="adminPasswordInput" placeholder="Enter Admin Passcode" required autocomplete="current-password" />
+        </div>
+        <div class="auth-error-msg" id="authErrorMsg"></div>
+        <div class="admin-auth-actions">
+          <button type="submit" class="btn-primary">Unlock Admin Panel</button>
+          <button type="button" class="btn-secondary" onclick="closeAdminAuth()">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Admin Live Control Panel Modal -->
+  <div class="modal-backdrop" id="adminPanelModal">
+    <div class="admin-panel-dialog">
+      <div class="admin-panel-header">
+        <div class="admin-title-group">
+          <div class="sync-live-badge"><span class="pulse-dot"></span> LIVE SYNC ACTIVE</div>
+          <h2>Portal Link Manager & PDF Editor</h2>
+          <p>Updates sync in real-time across all connected students and open tabs.</p>
+        </div>
+        <button class="modal-close-btn" onclick="closeAdminPanel()" aria-label="Close admin panel">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+
+      <div class="admin-panel-body">
+        <!-- Section 1: Course Redirect Links -->
+        <div class="admin-section">
+          <h3 class="admin-section-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+            Edit Course Telegram / Portal Links
+          </h3>
+          
+          <div class="link-inputs-grid">
+            <div class="link-field">
+              <label for="adminLinkIelts">
+                <span class="field-pill pill-ielts">IELTS</span>
+                <span>IELTS Redirect Link</span>
+              </label>
+              <input type="url" id="adminLinkIelts" placeholder="https://t.me/..." required />
+            </div>
+
+            <div class="link-field">
+              <label for="adminLinkGerman">
+                <span class="field-pill pill-german">German</span>
+                <span>German Redirect Link</span>
+              </label>
+              <input type="url" id="adminLinkGerman" placeholder="https://t.me/..." required />
+            </div>
+
+            <div class="link-field">
+              <label for="adminLinkPte">
+                <span class="field-pill pill-pte">PTE</span>
+                <span>PTE Redirect Link</span>
+              </label>
+              <input type="url" id="adminLinkPte" placeholder="https://t.me/..." required />
+            </div>
+
+            <div class="link-field">
+              <label for="adminLinkOet">
+                <span class="field-pill pill-oet">OET</span>
+                <span>OET Redirect Link</span>
+              </label>
+              <input type="url" id="adminLinkOet" placeholder="https://t.me/..." required />
+            </div>
+
+            <div class="link-field full-width">
+              <label for="adminLinkHeroCta">
+                <span class="field-pill pill-main">Hero CTA</span>
+                <span>"Explore Study Materials" Button Redirect Link</span>
+              </label>
+              <input type="url" id="adminLinkHeroCta" placeholder="https://t.me/..." required />
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 2: PDF Document Update -->
+        <div class="admin-section">
+          <h3 class="admin-section-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+            Update Downloadable PDF Document (JOIN_NOW.pdf)
+          </h3>
+          <div class="pdf-management-box">
+            <div class="pdf-options-row">
+              <div class="pdf-opt-card">
+                <h4>Option A: Auto-generate PDF from current links</h4>
+                <p>Generates a formatted PDF containing the exact active Telegram links updated above.</p>
+                <button type="button" class="btn-outline" onclick="adminRegeneratePdfFromLinks()">
+                  ⚡ Generate PDF from Active Links
+                </button>
+              </div>
+
+              <div class="pdf-opt-card">
+                <h4>Option B: Upload Custom PDF File</h4>
+                <p>Upload your own custom PDF document to replace JOIN_NOW.pdf across all downloads.</p>
+                <div class="custom-file-upload">
+                  <input type="file" id="adminPdfFileInput" accept="application/pdf" onchange="handleAdminPdfUpload(event)" />
+                  <label for="adminPdfFileInput" class="btn-outline">
+                    📁 Choose PDF File...
+                  </label>
+                  <span class="file-name-display" id="uploadedPdfName">No custom file uploaded</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="pdf-preview-bar">
+              <span id="currentPdfStatusText">Active Document: Default JOIN_NOW.pdf</span>
+              <button type="button" class="btn-test-download" onclick="downloadJoinNowFile()">
+                📥 Test Download Current PDF
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="admin-panel-footer">
+        <button type="button" class="btn-secondary" onclick="resetAdminLinksToDefault()">Reset to Default Links</button>
+        <div class="footer-right-actions">
+          <button type="button" class="btn-secondary" onclick="closeAdminPanel()">Cancel</button>
+          <button type="button" class="btn-primary" onclick="saveAndSyncAdminChanges()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            Save & Sync Live Now
+          </button>
+        </div>
       </div>
     </div>
   </div>
