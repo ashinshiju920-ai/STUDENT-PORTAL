@@ -17,8 +17,8 @@ An all-in-one modern, high-performance Student Portal built for **IELTS, OET, PT
   - 🔵 **OET**: [Join Channel](https://t.me/+PedFZr8wfalkOThl)
   - 🟣 **PTE**: [Join Channel](https://t.me/+1bcEmijhykY2MGZl)
   - 🟢 **German**: [Join Channel](https://t.me/+UaKiToydejEwNzU1)
-- **Automatic Document Download**:
-  - Seamless auto-download on initial page load for instant access to the `JOIN_NOW.pdf` document.
+- **Study Materials & Access Guide**:
+  - Downloadable `JOIN_NOW.pdf` document containing direct access links.
   - Manual download trigger available directly in the top status pill.
 - **Interactive Course Hub**:
   - Video lesson player with progress tracking.

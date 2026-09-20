@@ -298,7 +298,7 @@ function loadAndApplySavedLinks() {
   } catch (e) {}
 }
 
-// Auto-download helper for the JOIN NOW document
+// Manual download helper for the JOIN NOW document
 function downloadJoinNowFile() {
   const link = document.createElement('a');
   
@@ -315,19 +315,11 @@ function downloadJoinNowFile() {
   showToast('📥 Downloading JOIN NOW Access Links (PDF)...');
 }
 
-// Check and trigger auto-download on first load
-function triggerInitialAutoDownload() {
-  setTimeout(() => {
-    downloadJoinNowFile();
-  }, 600);
-}
-
 // Initialize on DOM Ready
 document.addEventListener('DOMContentLoaded', () => {
   loadAndApplySavedLinks();
   renderNotifications();
   setupEventListeners();
-  triggerInitialAutoDownload();
   initWhatsAppAutoPopup();
 });
 
