@@ -225,7 +225,14 @@ function getActiveLinks() {
   try {
     const saved = localStorage.getItem('xylem_portal_links');
     if (saved) {
-      return { ...DEFAULT_LINKS, ...JSON.parse(saved) };
+      const parsed = JSON.parse(saved);
+      const links = { ...DEFAULT_LINKS };
+      for (const k in DEFAULT_LINKS) {
+        if (parsed[k] && typeof parsed[k] === 'string' && parsed[k].trim().length > 0) {
+          links[k] = parsed[k].trim();
+        }
+      }
+      return links;
     }
   } catch (err) {
     console.warn('Storage read error:', err);
@@ -359,39 +366,6 @@ function setupEventListeners() {
     });
   }
 
-  const receiptModal = document.getElementById('receiptModal');
-  if (receiptModal) {
-    receiptModal.addEventListener('click', (e) => {
-      if (e.target === receiptModal) {
-        closePaymentReceipt();
-      }
-    });
-  }
-
-// Reliable multi-platform navigation handler for course cards
-function navigateToCourse(event, courseKey) {
-  const links = getActiveLinks();
-  const targetUrl = links[courseKey] || DEFAULT_LINKS[courseKey];
-  
-  if (!targetUrl) return;
-
-  // On mobile browsers and in-app webviews, setting href directly guarantees navigation
-  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-
-  if (isMobile) {
-    // If in mobile browser / webview, direct navigation triggers Telegram app cleanly
-    window.location.href = targetUrl;
-    if (event) event.preventDefault();
-  } else {
-    // On desktop, open in new tab
-    const win = window.open(targetUrl, '_blank', 'noopener,noreferrer');
-    if (!win || win.closed || typeof win.closed === 'undefined') {
-      window.location.href = targetUrl;
-    }
-    if (event) event.preventDefault();
-  }
-}
-
   const adminAuthModal = document.getElementById('adminAuthModal');
   if (adminAuthModal) {
     adminAuthModal.addEventListener('click', (e) => {
@@ -410,6 +384,40 @@ function navigateToCourse(event, courseKey) {
     });
   }
 }
+
+// Reliable multi-platform navigation handler for course cards
+function navigateToCourse(event, courseKey) {
+  const links = getActiveLinks();
+  const targetUrl = (links && links[courseKey]) ? links[courseKey] : DEFAULT_LINKS[courseKey];
+  
+  if (!targetUrl) return;
+
+  const card = document.getElementById('card-' + courseKey);
+  if (card) {
+    card.href = targetUrl;
+  }
+
+  const isMobile = /iPhone|iPad|iPod|Android|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent || '');
+
+  if (isMobile) {
+    // On mobile devices, direct window.location navigation triggers Telegram app seamlessly
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    window.location.href = targetUrl;
+  } else {
+    // On desktop, open in new tab
+    if (event) {
+      event.preventDefault();
+    }
+    const win = window.open(targetUrl, '_blank', 'noopener,noreferrer');
+    if (!win || win.closed || typeof win.closed === 'undefined') {
+      window.location.href = targetUrl;
+    }
+  }
+}
+window.navigateToCourse = navigateToCourse;
 
 /* ==========================================================================
    ADMIN PANEL & PASSWORD AUTHENTICATION CONTROLLERS
@@ -1039,10 +1047,29 @@ function showToast(message) {
     <span>${message}</span>
   `;
 
-  container.appendChild(toast);
-  setTimeout(() => {
-    toast.style.opacity = '0';
-    toast.style.transform = 'translateY(10px)';
-    setTimeout(() => toast.remove(), 300);
-  }, 3500);
-}
+// Export all globally invoked interactive handlers to window
+window.navigateToCourse = navigateToCourse;
+window.openAdminAuth = openAdminAuth;
+window.closeAdminAuth = closeAdminAuth;
+window.handleAdminAuthSubmit = handleAdminAuthSubmit;
+window.closeAdminPanel = closeAdminPanel;
+window.saveAdminLinks = saveAdminLinks;
+window.restoreDefaultLinks = restoreDefaultLinks;
+window.resetToDefaultPdf = resetToDefaultPdf;
+window.handleCustomPdfUpload = handleCustomPdfUpload;
+window.generateAndApplyNewPdf = generateAndApplyNewPdf;
+window.toggleWhatsAppPopup = toggleWhatsAppPopup;
+window.openPaymentReceipt = openPaymentReceipt;
+window.closePaymentReceipt = closePaymentReceipt;
+window.printReceipt = printReceipt;
+window.downloadJoinNowFile = downloadJoinNowFile;
+window.openCourseModal = openCourseModal;
+window.closeCourseModal = closeCourseModal;
+window.switchTab = switchTab;
+window.selectModule = selectModule;
+window.toggleModulePlay = toggleModulePlay;
+window.checkMockAnswer = checkMockAnswer;
+window.resetMockQuiz = resetMockQuiz;
+window.downloadMaterial = downloadMaterial;
+window.showToast = showToast;
+
