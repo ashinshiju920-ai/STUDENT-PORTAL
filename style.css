@@ -772,6 +772,178 @@ a {
   height: 50px;
 }
 
+/* Official Portal URL Click-to-Copy & Bookmark Card */
+.portal-url-card {
+  margin-top: 36px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1.5px solid rgba(0, 135, 90, 0.25);
+  border-radius: 12px;
+  padding: 12px 14px;
+  box-shadow: 0 6px 20px rgba(0, 56, 36, 0.08), 0 2px 6px rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 380px;
+  width: 100%;
+  position: relative;
+  z-index: 5;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.portal-url-card:hover {
+  box-shadow: 0 8px 24px rgba(0, 56, 36, 0.12);
+}
+
+.url-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.url-pulse-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-body);
+  font-size: 10.5px;
+  font-weight: var(--weight-bold);
+  color: var(--xylem-green);
+  letter-spacing: 0.6px;
+}
+
+.url-pulse-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #00C48C;
+  box-shadow: 0 0 0 0 rgba(0, 196, 140, 0.7);
+  animation: urlPulse 2s infinite;
+}
+
+@keyframes urlPulse {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(0, 196, 140, 0.7);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 6px rgba(0, 196, 140, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(0, 196, 140, 0);
+  }
+}
+
+.url-bookmark-badge {
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: var(--weight-semibold);
+  color: #0E5E3A;
+  background: #E8F7F0;
+  padding: 2px 8px;
+  border-radius: 12px;
+  border: 1px solid #C8E8DA;
+  white-space: nowrap;
+}
+
+.portal-url-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #F4F8F6;
+  border: 1px solid #D2E7DC;
+  border-radius: 8px;
+  padding: 6px 8px 6px 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  gap: 8px;
+}
+
+.portal-url-bar:hover {
+  background: #EAF4EE;
+  border-color: var(--xylem-green);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 135, 90, 0.12);
+}
+
+.portal-url-bar:active {
+  transform: translateY(0);
+}
+
+.url-link-area {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow: hidden;
+  min-width: 0;
+}
+
+.url-globe-icon {
+  width: 15px;
+  height: 15px;
+  color: var(--xylem-green);
+  flex-shrink: 0;
+}
+
+.url-address {
+  font-family: 'SF Mono', Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+  font-size: 12px;
+  font-weight: var(--weight-bold);
+  color: #074E32;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  user-select: all;
+}
+
+.copy-url-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--xylem-green);
+  color: #FFFFFF;
+  border: none;
+  border-radius: 6px;
+  padding: 5px 10px;
+  font-family: var(--font-body);
+  font-size: 11.5px;
+  font-weight: var(--weight-bold);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.copy-url-btn:hover {
+  background: var(--xylem-green-hover);
+}
+
+.copy-url-btn.copied {
+  background: #00C48C;
+  color: #053320;
+}
+
+.copy-icon {
+  width: 13px;
+  height: 13px;
+}
+
+.url-hint-text {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: #526660;
+  margin: 0;
+  line-height: 1.35;
+}
+
+.url-hint-text strong {
+  color: #1A3E31;
+}
+
 /* ==========================================================================
    4 CORE COURSE CARDS GRID
    ========================================================================== */

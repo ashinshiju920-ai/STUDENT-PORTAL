@@ -24,12 +24,12 @@ endobj
       /F2 6 0 R
     >>
   >>
-  /Annots [7 0 R 8 0 R 9 0 R 10 0 R]
+  /Annots [7 0 R 8 0 R 9 0 R 10 0 R 11 0 R]
 >>
 endobj
 4 0 obj
 <<
-  /Length 550
+  /Length 581
 >>
 stream
 BT
@@ -38,28 +38,38 @@ BT
 (XYLEM LEARNING - STUDENT PORTAL) Tj
 ET
 BT
-/F1 16 Tf
-50 730 Td
-(JOIN NOW) Tj
+/F1 15 Tf
+50 735 Td
+(JOIN NOW - OFFICIAL ACCESS LINKS) Tj
 ET
 BT
-/F2 13 Tf
-50 680 Td
+/F1 11 Tf
+50 705 Td
+(Official Portal URL: https://portal.xylemlearning.online/) Tj
+ET
+BT
+/F2 10 Tf
+50 690 Td
+((Save and bookmark this URL for future lifetime reference)) Tj
+ET
+BT
+/F2 12 Tf
+50 650 Td
 (Ielts - https://t.me/+6QWk7YKTQLgwM2E1) Tj
 ET
 BT
-/F2 13 Tf
-50 650 Td
+/F2 12 Tf
+50 620 Td
 (German- https://t.me/+UaKiToydejEwNzU1) Tj
 ET
 BT
-/F2 13 Tf
-50 620 Td
+/F2 12 Tf
+50 590 Td
 (Pte - https://t.me/+1bcEmijhykY2MGZl) Tj
 ET
 BT
-/F2 13 Tf
-50 590 Td
+/F2 12 Tf
+50 560 Td
 (Oet - https://t.me/+PedFZr8wfalkOThl) Tj
 ET
 endstream
@@ -82,12 +92,12 @@ endobj
 <<
   /Type /Annot
   /Subtype /Link
-  /Rect [50 675 400 695]
+  /Rect [50 700 450 720]
   /Border [0 0 0]
   /A <<
     /Type /Action
     /S /URI
-    /URI (https://t.me/+6QWk7YKTQLgwM2E1)
+    /URI (https://portal.xylemlearning.online/)
   >>
 >>
 endobj
@@ -100,7 +110,7 @@ endobj
   /A <<
     /Type /Action
     /S /URI
-    /URI (https://t.me/+UaKiToydejEwNzU1)
+    /URI (https://t.me/+6QWk7YKTQLgwM2E1)
   >>
 >>
 endobj
@@ -113,7 +123,7 @@ endobj
   /A <<
     /Type /Action
     /S /URI
-    /URI (https://t.me/+1bcEmijhykY2MGZl)
+    /URI (https://t.me/+UaKiToydejEwNzU1)
   >>
 >>
 endobj
@@ -126,28 +136,42 @@ endobj
   /A <<
     /Type /Action
     /S /URI
+    /URI (https://t.me/+1bcEmijhykY2MGZl)
+  >>
+>>
+endobj
+11 0 obj
+<<
+  /Type /Annot
+  /Subtype /Link
+  /Rect [50 555 400 575]
+  /Border [0 0 0]
+  /A <<
+    /Type /Action
+    /S /URI
     /URI (https://t.me/+PedFZr8wfalkOThl)
   >>
 >>
 endobj
 xref
-0 11
+0 12
 0000000000 65535 f 
 0000000009 00000 n 
-0000000058 00000 n 
-0000000115 00000 n 
-0000000295 00000 n 
-0000000898 00000 n 
-0000000971 00000 n 
-0000001039 00000 n 
-0000001178 00000 n 
-0000001317 00000 n 
-0000001456 00000 n 
+0000000062 00000 n 
+0000000125 00000 n 
+0000000343 00000 n 
+0000000977 00000 n 
+0000001058 00000 n 
+0000001134 00000 n 
+0000001321 00000 n 
+0000001502 00000 n 
+0000001683 00000 n 
+0000001865 00000 n 
 trailer
 <<
-  /Size 11
+  /Size 12
   /Root 1 0 R
 >>
 startxref
-1595
+2047
 %%EOF

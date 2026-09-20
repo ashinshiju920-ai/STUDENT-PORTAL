@@ -12,11 +12,16 @@ An all-in-one modern, high-performance Student Portal built for **IELTS, OET, PT
   - `Plus Jakarta Sans` (800 / 700) for headlines, titles, and brand hierarchy.
   - `DM Sans` (400 / 500 / 600) for body copy, UI controls, navigation, and compact action buttons.
   - `Caveat` (700) for handwritten motivational slogans.
+- **Official Student Portal Link**:
+  - 🌐 **Live Portal**: [https://portal.xylemlearning.online/](https://portal.xylemlearning.online/)
+  - One-click copy & save for future student reference.
 - **Direct Telegram Portal Access**:
   - 🔴 **IELTS**: [Join Channel](https://t.me/+6QWk7YKTQLgwM2E1)
   - 🔵 **OET**: [Join Channel](https://t.me/+PedFZr8wfalkOThl)
   - 🟣 **PTE**: [Join Channel](https://t.me/+1bcEmijhykY2MGZl)
   - 🟢 **German**: [Join Channel](https://t.me/+UaKiToydejEwNzU1)
+- **WhatsApp Support**:
+  - 💬 **Direct Chat**: [+91 62823 77918](https://wa.me/916282377918)
 - **Study Materials & Access Guide**:
   - Downloadable `JOIN_NOW.pdf` document containing direct access links.
   - Manual download trigger available directly in the top status pill.

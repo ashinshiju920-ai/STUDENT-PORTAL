@@ -628,12 +628,12 @@ endobj
       /F2 6 0 R
     >>
   >>
-  /Annots [7 0 R 8 0 R 9 0 R 10 0 R]
+  /Annots [7 0 R 8 0 R 9 0 R 10 0 R 11 0 R]
 >>
 endobj
 4 0 obj
 <<
-  /Length 550
+  /Length 700
 >>
 stream
 BT
@@ -642,28 +642,38 @@ BT
 (XYLEM LEARNING - STUDENT PORTAL) Tj
 ET
 BT
-/F1 16 Tf
-50 730 Td
-(JOIN NOW) Tj
+/F1 15 Tf
+50 735 Td
+(JOIN NOW - OFFICIAL ACCESS LINKS) Tj
 ET
 BT
-/F2 13 Tf
-50 680 Td
+/F1 11 Tf
+50 705 Td
+(Official Portal URL: https://portal.xylemlearning.online/) Tj
+ET
+BT
+/F2 10 Tf
+50 690 Td
+(\(Save and bookmark this URL for future lifetime reference\)) Tj
+ET
+BT
+/F2 12 Tf
+50 650 Td
 (Ielts - ${links.ielts}) Tj
 ET
 BT
-/F2 13 Tf
-50 650 Td
+/F2 12 Tf
+50 620 Td
 (German- ${links.german}) Tj
 ET
 BT
-/F2 13 Tf
-50 620 Td
+/F2 12 Tf
+50 590 Td
 (Pte - ${links.pte}) Tj
 ET
 BT
-/F2 13 Tf
-50 590 Td
+/F2 12 Tf
+50 560 Td
 (Oet - ${links.oet}) Tj
 ET
 endstream
@@ -686,12 +696,12 @@ endobj
 <<
   /Type /Annot
   /Subtype /Link
-  /Rect [50 675 400 695]
+  /Rect [50 700 450 720]
   /Border [0 0 0]
   /A <<
     /Type /Action
     /S /URI
-    /URI (${links.ielts})
+    /URI (https://portal.xylemlearning.online/)
   >>
 >>
 endobj
@@ -704,7 +714,7 @@ endobj
   /A <<
     /Type /Action
     /S /URI
-    /URI (${links.german})
+    /URI (${links.ielts})
   >>
 >>
 endobj
@@ -717,7 +727,7 @@ endobj
   /A <<
     /Type /Action
     /S /URI
-    /URI (${links.pte})
+    /URI (${links.german})
   >>
 >>
 endobj
@@ -730,30 +740,44 @@ endobj
   /A <<
     /Type /Action
     /S /URI
+    /URI (${links.pte})
+  >>
+>>
+endobj
+11 0 obj
+<<
+  /Type /Annot
+  /Subtype /Link
+  /Rect [50 555 400 575]
+  /Border [0 0 0]
+  /A <<
+    /Type /Action
+    /S /URI
     /URI (${links.oet})
   >>
 >>
 endobj
 xref
-0 11
+0 12
 0000000000 65535 f 
 0000000009 00000 n 
 0000000058 00000 n 
 0000000115 00000 n 
-0000000295 00000 n 
-0000000898 00000 n 
-0000000971 00000 n 
-0000001039 00000 n 
-0000001178 00000 n 
-0000001317 00000 n 
-0000001456 00000 n 
+0000000305 00000 n 
+0000000950 00000 n 
+0000001025 00000 n 
+0000001095 00000 n 
+0000001245 00000 n 
+0000001385 00000 n 
+0000001525 00000 n 
+0000001665 00000 n 
 trailer
 <<
-  /Size 11
+  /Size 12
   /Root 1 0 R
 >>
 startxref
-1595
+1810
 %%EOF`;
 
   const blob = new Blob([pdfString], { type: 'application/pdf' });
@@ -1047,8 +1071,71 @@ function showToast(message) {
     <span>${message}</span>
   `;
 
+  container.appendChild(toast);
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateY(10px)';
+    setTimeout(() => toast.remove(), 300);
+  }, 3500);
+}
+
+// Copy Portal Website URL to Clipboard
+function copyPortalUrl() {
+  const url = 'https://portal.xylemlearning.online/';
+  
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(url)
+      .then(() => {
+        handleCopySuccess();
+      })
+      .catch(() => {
+        fallbackCopyText(url);
+      });
+  } else {
+    fallbackCopyText(url);
+  }
+}
+
+function fallbackCopyText(text) {
+  const textArea = document.createElement('textarea');
+  textArea.value = text;
+  textArea.style.position = 'fixed';
+  textArea.style.top = '-9999px';
+  textArea.style.left = '-9999px';
+  document.body.appendChild(textArea);
+  textArea.focus();
+  textArea.select();
+  try {
+    const successful = document.execCommand('copy');
+    if (successful) {
+      handleCopySuccess();
+    } else {
+      showToast('📋 Portal URL: ' + text);
+    }
+  } catch (err) {
+    showToast('📋 Portal URL: ' + text);
+  }
+  document.body.removeChild(textArea);
+}
+
+function handleCopySuccess() {
+  const btn = document.getElementById('copyUrlBtn');
+  const label = document.getElementById('copyBtnLabel');
+  
+  if (btn) btn.classList.add('copied');
+  if (label) label.textContent = 'Copied!';
+  
+  showToast('✓ Portal URL copied! Save this link for future reference.');
+  
+  setTimeout(() => {
+    if (btn) btn.classList.remove('copied');
+    if (label) label.textContent = 'Copy';
+  }, 2500);
+}
+
 // Export all globally invoked interactive handlers to window
 window.navigateToCourse = navigateToCourse;
+window.copyPortalUrl = copyPortalUrl;
 window.openAdminAuth = openAdminAuth;
 window.closeAdminAuth = closeAdminAuth;
 window.handleAdminAuthSubmit = handleAdminAuthSubmit;
