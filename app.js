@@ -368,19 +368,29 @@ function setupEventListeners() {
     });
   }
 
-  // Explicit Course Card click redirection
-  const cards = document.querySelectorAll('.course-card');
-  cards.forEach(card => {
-    card.addEventListener('click', (e) => {
-      const url = card.getAttribute('href');
-      if (url && url.startsWith('http')) {
-        // Allow native link navigation while ensuring window.open fallback
-        if (e.target.tagName !== 'A') {
-          window.open(url, '_blank', 'noopener,noreferrer');
-        }
-      }
-    });
-  });
+// Reliable multi-platform navigation handler for course cards
+function navigateToCourse(event, courseKey) {
+  const links = getActiveLinks();
+  const targetUrl = links[courseKey] || DEFAULT_LINKS[courseKey];
+  
+  if (!targetUrl) return;
+
+  // On mobile browsers and in-app webviews, setting href directly guarantees navigation
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+  if (isMobile) {
+    // If in mobile browser / webview, direct navigation triggers Telegram app cleanly
+    window.location.href = targetUrl;
+    if (event) event.preventDefault();
+  } else {
+    // On desktop, open in new tab
+    const win = window.open(targetUrl, '_blank', 'noopener,noreferrer');
+    if (!win || win.closed || typeof win.closed === 'undefined') {
+      window.location.href = targetUrl;
+    }
+    if (event) event.preventDefault();
+  }
+}
 
   const adminAuthModal = document.getElementById('adminAuthModal');
   if (adminAuthModal) {
