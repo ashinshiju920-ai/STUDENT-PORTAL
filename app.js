@@ -178,13 +178,14 @@ const NOTIFICATIONS = [
   }
 ];
 
-// Default Telegram & Redirect Links
+// Default Telegram & Redirect Links & WhatsApp
 const DEFAULT_LINKS = {
   ielts: 'https://t.me/+6QWk7YKTQLgwM2E1',
   german: 'https://t.me/+UaKiToydejEwNzU1',
   pte: 'https://t.me/+1bcEmijhykY2MGZl',
   oet: 'https://t.me/+PedFZr8wfalkOThl',
-  heroCta: 'https://t.me/+6QWk7YKTQLgwM2E1'
+  heroCta: 'https://t.me/+6QWk7YKTQLgwM2E1',
+  whatsappNumber: '916282377918'
 };
 
 const ADMIN_PASSCODE = "987654321";
@@ -232,7 +233,7 @@ function getActiveLinks() {
   return { ...DEFAULT_LINKS };
 }
 
-// Apply links to DOM and Course Data
+// Apply links to DOM, WhatsApp and Course Data
 function applyActiveLinks(links, notify = false) {
   // Update Course Cards href
   const cardIelts = document.getElementById('card-ielts');
@@ -240,12 +241,19 @@ function applyActiveLinks(links, notify = false) {
   const cardPte = document.getElementById('card-pte');
   const cardOet = document.getElementById('card-oet');
   const heroCta = document.querySelector('.hero-primary-cta');
+  const waDirectLink = document.getElementById('waDirectLink');
 
   if (cardIelts) cardIelts.href = links.ielts;
   if (cardGerman) cardGerman.href = links.german;
   if (cardPte) cardPte.href = links.pte;
   if (cardOet) cardOet.href = links.oet;
   if (heroCta) heroCta.href = links.heroCta;
+
+  // Update WhatsApp direct link
+  const waNum = links.whatsappNumber || DEFAULT_LINKS.whatsappNumber;
+  if (waDirectLink) {
+    waDirectLink.href = `https://wa.me/${waNum}?text=Hello%20Xylem%20Learning,%20I%20need%20assistance%20with%20my%20student%20portal%20courses!`;
+  }
 
   // Update Courses Data internal urls
   if (COURSES_DATA.ielts) COURSES_DATA.ielts.telegramUrl = links.ielts;
@@ -254,8 +262,25 @@ function applyActiveLinks(links, notify = false) {
   if (COURSES_DATA.oet) COURSES_DATA.oet.telegramUrl = links.oet;
 
   if (notify) {
-    showToast('✓ Links updated and synced live!');
+    showToast('✓ Links & WhatsApp updated and synced live!');
   }
+}
+
+// WhatsApp Widget Controls
+function toggleWhatsAppPopup() {
+  const popup = document.getElementById('whatsappChatPopup');
+  if (popup) {
+    popup.classList.toggle('open');
+  }
+}
+
+function initWhatsAppAutoPopup() {
+  setTimeout(() => {
+    const popup = document.getElementById('whatsappChatPopup');
+    if (popup && !popup.classList.contains('open')) {
+      popup.classList.add('open');
+    }
+  }, 3500);
 }
 
 function loadAndApplySavedLinks() {
@@ -303,6 +328,7 @@ document.addEventListener('DOMContentLoaded', () => {
   renderNotifications();
   setupEventListeners();
   triggerInitialAutoDownload();
+  initWhatsAppAutoPopup();
 });
 
 // Set up UI event listeners
@@ -423,6 +449,7 @@ function openAdminPanel() {
   document.getElementById('adminLinkPte').value = links.pte;
   document.getElementById('adminLinkOet').value = links.oet;
   document.getElementById('adminLinkHeroCta').value = links.heroCta;
+  document.getElementById('adminWhatsappNumber').value = links.whatsappNumber || DEFAULT_LINKS.whatsappNumber;
 
   if (modal) {
     modal.classList.add('open');
@@ -442,13 +469,14 @@ function saveAndSyncAdminChanges() {
   const pte = document.getElementById('adminLinkPte').value.trim();
   const oet = document.getElementById('adminLinkOet').value.trim();
   const heroCta = document.getElementById('adminLinkHeroCta').value.trim();
+  const whatsappNumber = document.getElementById('adminWhatsappNumber').value.trim() || DEFAULT_LINKS.whatsappNumber;
 
   if (!ielts || !german || !pte || !oet || !heroCta) {
     showToast('⚠️ Please provide valid URLs for all fields.');
     return;
   }
 
-  const updatedLinks = { ielts, german, pte, oet, heroCta };
+  const updatedLinks = { ielts, german, pte, oet, heroCta, whatsappNumber };
 
   // Save to LocalStorage
   try {
@@ -473,7 +501,7 @@ function saveAndSyncAdminChanges() {
 }
 
 function resetAdminLinksToDefault() {
-  if (confirm('Reset all portal links and PDF settings back to original defaults?')) {
+  if (confirm('Reset all portal links, WhatsApp number, and PDF settings back to original defaults?')) {
     localStorage.removeItem('xylem_portal_links');
     localStorage.removeItem('xylem_custom_pdf_data');
     window.activeCustomPdfData = null;
@@ -494,10 +522,11 @@ function resetAdminLinksToDefault() {
     document.getElementById('adminLinkPte').value = DEFAULT_LINKS.pte;
     document.getElementById('adminLinkOet').value = DEFAULT_LINKS.oet;
     document.getElementById('adminLinkHeroCta').value = DEFAULT_LINKS.heroCta;
+    document.getElementById('adminWhatsappNumber').value = DEFAULT_LINKS.whatsappNumber;
     document.getElementById('uploadedPdfName').textContent = 'No custom file uploaded';
     document.getElementById('currentPdfStatusText').textContent = 'Active Document: Default JOIN_NOW.pdf';
 
-    showToast('✓ Portal links & document reset to defaults.');
+    showToast('✓ Portal links, WhatsApp & document reset to defaults.');
   }
 }
 
