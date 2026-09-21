@@ -240,26 +240,71 @@ function getActiveLinks() {
   return { ...DEFAULT_LINKS };
 }
 
+// Helper to detect mobile or touch environments
+function isMobileOrTouchDevice() {
+  return (
+    /Android|iPhone|iPad|iPod|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+    (window.matchMedia && window.matchMedia('(max-width: 768px)').matches) ||
+    (typeof navigator.maxTouchPoints === 'number' && navigator.maxTouchPoints > 0 && window.innerWidth <= 900)
+  );
+}
+
+// Universal rock-solid Telegram redirection function
+function openTelegramRedirect(targetUrl, event) {
+  if (!targetUrl) return;
+
+  if (isMobileOrTouchDevice()) {
+    // On Mobile (iOS / Android / WebViews):
+    // 1. Prevent default anchor behavior to avoid blank tab popup issues
+    if (event) {
+      if (typeof event.preventDefault === 'function') event.preventDefault();
+      if (typeof event.stopPropagation === 'function') event.stopPropagation();
+    }
+
+    // 2. Direct location assignment invokes Universal Links (iOS) and App Links (Android)
+    // without popup blocking or blank tab issues
+    window.location.href = targetUrl;
+  } else {
+    // On Desktop:
+    // If not triggered by a natural anchor click (e.g. programmatic), open in new tab
+    if (!event || !event.target || !event.target.closest('a')) {
+      window.open(targetUrl, '_blank', 'noopener,noreferrer');
+    }
+  }
+}
+
 // Apply links to DOM, WhatsApp and Course Data
 function applyActiveLinks(links, notify = false) {
-  // Update Course Cards href
-  const cardIelts = document.getElementById('card-ielts');
-  const cardGerman = document.getElementById('card-german');
-  const cardPte = document.getElementById('card-pte');
-  const cardOet = document.getElementById('card-oet');
-  const heroCta = document.querySelector('.hero-primary-cta');
-  const waDirectLink = document.getElementById('waDirectLink');
+  const isMobile = isMobileOrTouchDevice();
 
-  if (cardIelts) cardIelts.href = links.ielts;
-  if (cardGerman) cardGerman.href = links.german;
-  if (cardPte) cardPte.href = links.pte;
-  if (cardOet) cardOet.href = links.oet;
-  if (heroCta) heroCta.href = links.heroCta;
+  // Helper to configure link target attributes dynamically
+  const configureLink = (element, url) => {
+    if (!element || !url) return;
+    element.href = url;
+    element.setAttribute('href', url);
+    if (isMobile) {
+      // Direct navigation on mobile for clean Universal Link / App handoff
+      element.removeAttribute('target');
+      element.setAttribute('target', '_self');
+    } else {
+      element.setAttribute('target', '_blank');
+      element.setAttribute('rel', 'noopener noreferrer');
+    }
+  };
+
+  // Update Course Cards
+  configureLink(document.getElementById('card-ielts'), links.ielts);
+  configureLink(document.getElementById('card-german'), links.german);
+  configureLink(document.getElementById('card-pte'), links.pte);
+  configureLink(document.getElementById('card-oet'), links.oet);
+  configureLink(document.getElementById('heroPrimaryCta') || document.querySelector('.hero-primary-cta'), links.heroCta);
 
   // Update WhatsApp direct link
   const waNum = links.whatsappNumber || DEFAULT_LINKS.whatsappNumber;
+  const waDirectLink = document.getElementById('waDirectLink');
   if (waDirectLink) {
-    waDirectLink.href = `https://wa.me/${waNum}?text=Hello%20Xylem%20Learning,%20I%20need%20assistance%20with%20my%20student%20portal%20courses!`;
+    const waUrl = `https://wa.me/${waNum}?text=Hello%20Xylem%20Learning,%20I%20need%20assistance%20with%20my%20student%20portal%20courses!`;
+    configureLink(waDirectLink, waUrl);
   }
 
   // Update Courses Data internal urls
@@ -318,6 +363,12 @@ document.addEventListener('DOMContentLoaded', () => {
   loadAndApplySavedLinks();
   renderNotifications();
   setupEventListeners();
+
+  // Listen for resize / orientation change to re-evaluate mobile link targets
+  window.addEventListener('resize', () => {
+    const links = getActiveLinks();
+    applyActiveLinks(links, false);
+  });
 });
 
 // Set up UI event listeners
@@ -338,6 +389,10 @@ function setupEventListeners() {
 
   // Close menus when clicking outside
   document.addEventListener('click', (e) => {
+    const profileDropdown = document.getElementById('studentProfileDropdown') || document.querySelector('.student-profile-dropdown');
+    const notificationPanel = document.getElementById('notificationPanel') || document.querySelector('.notification-panel');
+    const notificationBtn = document.getElementById('notificationBtn') || document.querySelector('.notification-trigger');
+
     if (profileDropdown && !profileDropdown.contains(e.target)) {
       profileDropdown.classList.remove('open');
     }
@@ -388,12 +443,26 @@ function navigateToCourse(event, courseKey) {
     card.setAttribute('href', targetUrl);
   }
 
-  // If called programmatically (not a natural anchor click)
-  if (!event || !event.target || !event.target.closest('a')) {
-    window.open(targetUrl, '_blank', 'noopener,noreferrer');
-  }
+  openTelegramRedirect(targetUrl, event);
 }
 window.navigateToCourse = navigateToCourse;
+
+// Reliable multi-platform navigation handler for hero CTA
+function navigateToHeroCta(event) {
+  const links = getActiveLinks();
+  const targetUrl = (links && links.heroCta) ? links.heroCta : DEFAULT_LINKS.heroCta;
+
+  if (!targetUrl) return;
+
+  const heroCta = document.getElementById('heroPrimaryCta') || document.querySelector('.hero-primary-cta');
+  if (heroCta) {
+    heroCta.href = targetUrl;
+    heroCta.setAttribute('href', targetUrl);
+  }
+
+  openTelegramRedirect(targetUrl, event);
+}
+window.navigateToHeroCta = navigateToHeroCta;
 
 /* ==========================================================================
    ADMIN PANEL & PASSWORD AUTHENTICATION CONTROLLERS
@@ -1110,29 +1179,33 @@ function handleCopySuccess() {
 }
 
 // Export all globally invoked interactive handlers to window
+window.isMobileOrTouchDevice = isMobileOrTouchDevice;
+window.openTelegramRedirect = openTelegramRedirect;
 window.navigateToCourse = navigateToCourse;
+window.navigateToHeroCta = navigateToHeroCta;
 window.copyPortalUrl = copyPortalUrl;
 window.openAdminAuth = openAdminAuth;
 window.closeAdminAuth = closeAdminAuth;
 window.handleAdminAuthSubmit = handleAdminAuthSubmit;
+window.openAdminPanel = openAdminPanel;
 window.closeAdminPanel = closeAdminPanel;
-window.saveAdminLinks = saveAdminLinks;
-window.restoreDefaultLinks = restoreDefaultLinks;
-window.resetToDefaultPdf = resetToDefaultPdf;
-window.handleCustomPdfUpload = handleCustomPdfUpload;
-window.generateAndApplyNewPdf = generateAndApplyNewPdf;
+window.saveAndSyncAdminChanges = saveAndSyncAdminChanges;
+window.resetAdminLinksToDefault = resetAdminLinksToDefault;
+window.handleAdminPdfUpload = handleAdminPdfUpload;
+window.adminRegeneratePdfFromLinks = adminRegeneratePdfFromLinks;
 window.toggleWhatsAppPopup = toggleWhatsAppPopup;
 window.openPaymentReceipt = openPaymentReceipt;
 window.closePaymentReceipt = closePaymentReceipt;
 window.printReceipt = printReceipt;
 window.downloadJoinNowFile = downloadJoinNowFile;
-window.openCourseModal = openCourseModal;
+window.openCourseDashboard = openCourseDashboard;
 window.closeCourseModal = closeCourseModal;
-window.switchTab = switchTab;
-window.selectModule = selectModule;
-window.toggleModulePlay = toggleModulePlay;
-window.checkMockAnswer = checkMockAnswer;
-window.resetMockQuiz = resetMockQuiz;
+window.switchCourseTab = switchCourseTab;
+window.selectModuleLesson = selectModuleLesson;
+window.playLessonVideo = playLessonVideo;
+window.markLessonComplete = markLessonComplete;
+window.selectMockAnswer = selectMockAnswer;
 window.downloadMaterial = downloadMaterial;
 window.showToast = showToast;
+
 

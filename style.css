@@ -76,10 +76,15 @@ h1, h2, h3, h4, h5, h6 {
   letter-spacing: -0.02em;
 }
 
-button {
+button, a, [role="button"] {
   font-family: var(--font-body);
-  font-weight: var(--weight-semibold);
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+button {
+  font-weight: var(--weight-semibold);
   border: none;
   background: none;
 }
@@ -684,22 +689,33 @@ a {
   font-weight: var(--weight-semibold);
   box-shadow: 0 4px 14px rgba(0, 135, 90, 0.25);
   transition: all var(--transition-fast);
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  cursor: pointer;
 }
 
-.hero-primary-cta:hover {
+@media (hover: hover) and (pointer: fine) {
+  .hero-primary-cta:hover {
+    background: var(--xylem-green-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(0, 135, 90, 0.32);
+  }
+
+  .hero-primary-cta:hover svg {
+    transform: translateX(3px);
+  }
+}
+
+.hero-primary-cta:active {
+  transform: scale(0.97);
   background: var(--xylem-green-hover);
-  transform: translateY(-1px);
-  box-shadow: 0 6px 18px rgba(0, 135, 90, 0.32);
+  transition: transform 0.1s ease;
 }
 
 .hero-primary-cta svg {
   width: 15px;
   height: 15px;
   transition: transform var(--transition-fast);
-}
-
-.hero-primary-cta:hover svg {
-  transform: translateX(3px);
 }
 
 .category-pills-row {
@@ -965,36 +981,25 @@ a {
   transition: transform var(--transition-normal), box-shadow var(--transition-normal);
   user-select: none;
   text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
-.course-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.22);
+@media (hover: hover) and (pointer: fine) {
+  .course-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 14px 30px rgba(0, 0, 0, 0.22);
+  }
+
+  .course-card:hover .card-person {
+    transform: scale(1.04) translateY(-1px);
+  }
 }
 
-.card-bg-layer {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-}
-
-.card-person {
-  position: absolute;
-  right: -5px;
-  bottom: 0;
-  width: 60%;
-  height: 94%;
-  background-size: contain;
-  background-position: bottom right;
-  background-repeat: no-repeat;
-  z-index: 2;
-  transition: transform var(--transition-smooth);
-}
-
-.course-card:hover .card-person {
-  transform: scale(1.04) translateY(-1px);
+.course-card:active {
+  transform: scale(0.982);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.16);
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
 }
 
 .card-monument {
@@ -1188,16 +1193,22 @@ a {
   transition: transform var(--transition-fast);
 }
 
-.course-card:hover .start-learning-btn {
-  background: #FFFFFF;
-  color: #1A362E;
-  border-color: #FFFFFF;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+@media (hover: hover) and (pointer: fine) {
+  .course-card:hover .start-learning-btn {
+    background: #FFFFFF;
+    color: #1A362E;
+    border-color: #FFFFFF;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  }
+
+  .course-card:hover .start-learning-btn svg {
+    transform: translateX(3px);
+    stroke: #1A362E;
+  }
 }
 
-.course-card:hover .start-learning-btn svg {
-  transform: translateX(3px);
-  stroke: #1A362E;
+.course-card:active .start-learning-btn {
+  background: rgba(255, 255, 255, 0.35);
 }
 
 /* ==========================================================================
