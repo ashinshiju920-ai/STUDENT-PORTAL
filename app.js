@@ -240,56 +240,120 @@ function getActiveLinks() {
   return { ...DEFAULT_LINKS };
 }
 
+// Helper to detect in-app mobile webviews (Instagram, Facebook, TikTok, WhatsApp, etc.)
+function isInAppBrowser() {
+  const ua = (navigator.userAgent || navigator.vendor || window.opera || '').toLowerCase();
+  return /fban|fbav|instagram|tiktok|line|whatsapp|micromessenger|snapchat|twitter|gsa|wv|webview/i.test(ua);
+}
+
+// Helper to detect iOS (iPhone, iPad, iPod)
+function isIOS() {
+  const ua = navigator.userAgent || '';
+  return /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+}
+
+// Helper to detect Android
+function isAndroid() {
+  return /android/i.test(navigator.userAgent || '');
+}
+
 // Helper to detect mobile or touch environments
-function isMobileOrTouchDevice() {
+function isMobileDevice() {
   return (
+    isIOS() ||
+    isAndroid() ||
     /Android|iPhone|iPad|iPod|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
     (window.matchMedia && window.matchMedia('(max-width: 768px)').matches) ||
     (typeof navigator.maxTouchPoints === 'number' && navigator.maxTouchPoints > 0 && window.innerWidth <= 900)
   );
 }
 
-// Universal rock-solid Telegram redirection function
-function openTelegramRedirect(targetUrl, event) {
+// Helper to extract Telegram deep link (tg://) from web URL
+function getTelegramDeepLink(url) {
+  if (!url || typeof url !== 'string') return url;
+  const trimmed = url.trim();
+  if (trimmed.startsWith('tg://')) return trimmed;
+
+  try {
+    // Private invite link: https://t.me/+HASH or https://t.me/joinchat/HASH
+    const plusMatch = trimmed.match(/t\.me\/\+([A-Za-z0-9_-]+)/i);
+    if (plusMatch && plusMatch[1]) {
+      return `tg://join?invite=${plusMatch[1]}`;
+    }
+
+    const joinchatMatch = trimmed.match(/t\.me\/joinchat\/([A-Za-z0-9_-]+)/i);
+    if (joinchatMatch && joinchatMatch[1]) {
+      return `tg://join?invite=${joinchatMatch[1]}`;
+    }
+
+    // Public channel/group/bot: https://t.me/channelname
+    const channelMatch = trimmed.match(/t\.me\/([A-Za-z0-9_]{4,})/i);
+    if (channelMatch && channelMatch[1] && !['joinchat', 'addstickers', 'share', 'proxy', 'socks'].includes(channelMatch[1].toLowerCase())) {
+      return `tg://resolve?domain=${channelMatch[1]}`;
+    }
+  } catch (e) {
+    console.warn('Error parsing telegram deep link:', e);
+  }
+
+  return trimmed;
+}
+
+// Track last navigation timestamp to prevent synthetic double-events on a single physical tap
+let lastRedirectTimestamp = 0;
+
+// Universal rock-solid Telegram redirection function (optimized for iPhone, Android & Desktop)
+function openTelegramPortal(targetUrl, event) {
   if (!targetUrl) return;
 
-  if (isMobileOrTouchDevice()) {
-    // On Mobile (iOS / Android / WebViews):
-    // 1. Prevent default anchor behavior to avoid blank tab popup issues
-    if (event) {
-      if (typeof event.preventDefault === 'function') event.preventDefault();
-      if (typeof event.stopPropagation === 'function') event.stopPropagation();
-    }
+  const now = Date.now();
+  // 60ms guard against synthetic touchstart+click double-triggering on the same single tap
+  if (now - lastRedirectTimestamp < 60) {
+    if (event && typeof event.preventDefault === 'function') event.preventDefault();
+    return;
+  }
+  lastRedirectTimestamp = now;
 
-    // 2. Direct location assignment invokes Universal Links (iOS) and App Links (Android)
-    // without popup blocking or blank tab issues
-    window.location.href = targetUrl;
-  } else {
-    // On Desktop:
-    // If not triggered by a natural anchor click (e.g. programmatic), open in new tab
+  const inApp = isInAppBrowser();
+  const deepLink = getTelegramDeepLink(targetUrl);
+
+  // In-App WebViews (Instagram, Facebook, TikTok, WhatsApp)
+  if (inApp) {
+    if (event && typeof event.preventDefault === 'function') event.preventDefault();
+    // Direct navigation forces the OS to prompt or launch the native Telegram app
+    window.location.href = (deepLink !== targetUrl) ? deepLink : targetUrl;
+    return;
+  }
+
+  // Mobile Safari / Chrome (iOS & Android)
+  if (isMobileDevice()) {
+    // If triggered from an anchor click, the natural click with target="_blank" and rel="noopener noreferrer"
+    // triggers iOS Universal Links and Android App Links cleanly while keeping the Student Portal open in the browser.
+    // If called programmatically (not a natural anchor event):
     if (!event || !event.target || !event.target.closest('a')) {
-      window.open(targetUrl, '_blank', 'noopener,noreferrer');
+      const win = window.open(targetUrl, '_blank', 'noopener,noreferrer');
+      if (!win) {
+        window.location.href = targetUrl;
+      }
     }
+    // Return to allow standard anchor handling without blocking subsequent clicks
+    return;
+  }
+
+  // Desktop Browsers:
+  if (!event || !event.target || !event.target.closest('a')) {
+    window.open(targetUrl, '_blank', 'noopener,noreferrer');
   }
 }
 
 // Apply links to DOM, WhatsApp and Course Data
 function applyActiveLinks(links, notify = false) {
-  const isMobile = isMobileOrTouchDevice();
-
   // Helper to configure link target attributes dynamically
   const configureLink = (element, url) => {
     if (!element || !url) return;
     element.href = url;
     element.setAttribute('href', url);
-    if (isMobile) {
-      // Direct navigation on mobile for clean Universal Link / App handoff
-      element.removeAttribute('target');
-      element.setAttribute('target', '_self');
-    } else {
-      element.setAttribute('target', '_blank');
-      element.setAttribute('rel', 'noopener noreferrer');
-    }
+    element.setAttribute('target', '_blank');
+    element.setAttribute('rel', 'noopener noreferrer');
   };
 
   // Update Course Cards
@@ -364,10 +428,21 @@ document.addEventListener('DOMContentLoaded', () => {
   renderNotifications();
   setupEventListeners();
 
-  // Listen for resize / orientation change to re-evaluate mobile link targets
+  // Listen for resize / orientation change to re-evaluate link targets
   window.addEventListener('resize', () => {
     const links = getActiveLinks();
     applyActiveLinks(links, false);
+  });
+
+  // Handle iOS/Android Back-Forward Cache (bfcache) and app resume
+  window.addEventListener('pageshow', (e) => {
+    loadAndApplySavedLinks();
+  });
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      loadAndApplySavedLinks();
+    }
   });
 });
 
@@ -430,7 +505,7 @@ function setupEventListeners() {
   }
 }
 
-// Reliable multi-platform navigation handler for course cards
+// Reliable multi-platform navigation handler for course cards (supports unlimited multiple clicks)
 function navigateToCourse(event, courseKey) {
   const links = getActiveLinks();
   const targetUrl = (links && links[courseKey]) ? links[courseKey] : DEFAULT_LINKS[courseKey];
@@ -443,11 +518,11 @@ function navigateToCourse(event, courseKey) {
     card.setAttribute('href', targetUrl);
   }
 
-  openTelegramRedirect(targetUrl, event);
+  openTelegramPortal(targetUrl, event);
 }
 window.navigateToCourse = navigateToCourse;
 
-// Reliable multi-platform navigation handler for hero CTA
+// Reliable multi-platform navigation handler for hero CTA (supports unlimited multiple clicks)
 function navigateToHeroCta(event) {
   const links = getActiveLinks();
   const targetUrl = (links && links.heroCta) ? links.heroCta : DEFAULT_LINKS.heroCta;
@@ -460,7 +535,7 @@ function navigateToHeroCta(event) {
     heroCta.setAttribute('href', targetUrl);
   }
 
-  openTelegramRedirect(targetUrl, event);
+  openTelegramPortal(targetUrl, event);
 }
 window.navigateToHeroCta = navigateToHeroCta;
 
@@ -1179,8 +1254,10 @@ function handleCopySuccess() {
 }
 
 // Export all globally invoked interactive handlers to window
-window.isMobileOrTouchDevice = isMobileOrTouchDevice;
-window.openTelegramRedirect = openTelegramRedirect;
+window.isMobileDevice = isMobileDevice;
+window.isInAppBrowser = isInAppBrowser;
+window.getTelegramDeepLink = getTelegramDeepLink;
+window.openTelegramPortal = openTelegramPortal;
 window.navigateToCourse = navigateToCourse;
 window.navigateToHeroCta = navigateToHeroCta;
 window.copyPortalUrl = copyPortalUrl;
